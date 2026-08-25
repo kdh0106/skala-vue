@@ -35,8 +35,11 @@ const weatherList = ref([
   },
 ])
 
-// 3. 양방향 바인딩 (v-model)으로 검색 입력값을 관리
+// 3. 양방향 바인딩 (:value, @input)으로 검색 입력값을 관리
 const keyword = ref('')
+const onInput = (e) => {
+  keyword.value = e.target.value
+}
 
 // 4. 이벤트: 카드 클릭 시 선택된 도시 표시
 const selectedCity = ref('')
@@ -56,10 +59,16 @@ const showDetail = (cityName, status) => {
 
     <section class="panel">
       <h3 class="panel__title">🔍 도시 검색</h3>
-      <!-- 3. v-model 양방향 바인딩 -->
+      <!-- 3. :value / @input 양방향 바인딩 -->
       <div class="search-wrap">
         <span class="search-wrap__icon">🔍</span>
-        <input v-model="keyword" class="search" type="text" placeholder="검색할 도시 이름 입력" />
+        <input
+          class="search"
+          type="text"
+          placeholder="검색할 도시 이름 입력"
+          :value="keyword"
+          @input="onInput"
+        />
       </div>
       <p class="search__echo">검색 중인 도시: {{ keyword || '없음' }}</p>
     </section>
