@@ -1,10 +1,10 @@
 <script setup>
-import WeatherMockup from './components/practices/basic/WeatherMockup.vue'
+import WeatherParent from './components/practices/component/WeatherParent.vue'
 </script>
 
 <template>
   <div class="page">
-    <WeatherMockup />
+    <WeatherParent />
   </div>
 </template>
 
