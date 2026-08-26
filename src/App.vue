@@ -1,6 +1,4 @@
 <script setup>
-// import { RouterLink, RouterView } from 'vue-router'
-// import HelloWorld from './components/HelloWorld.vue'
 import WeatherMockup from './components/practices/basic/WeatherMockup.vue'
 </script>
 

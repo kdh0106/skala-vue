@@ -1,5 +1,5 @@
 <script setup>
-import { ref } from 'vue'
+import { ref, computed, watch, watchEffect } from 'vue'
 
 // 1. 배열 렌더링 (v-for)에 쓰일 날씨 데이터
 const weatherList = ref([
@@ -35,22 +35,56 @@ const weatherList = ref([
   },
 ])
 
-// 3. 양방향 바인딩 (:value, @input)으로 검색 입력값을 관리
-const keyword = ref('')
+// 1 / 3. 반응형 상태 + 양방향 바인딩 (:value, @input)으로 검색어 관리
+const searchQuery = ref('')
 const onInput = (e) => {
-  keyword.value = e.target.value
+  searchQuery.value = e.target.value
 }
 
-// 4. 이벤트: 카드 클릭 시 선택된 도시 표시
-const selectedCity = ref('')
-const selectCity = (cityName) => {
-  selectedCity.value = cityName
+// 2. computed: 검색어가 도시 이름에 포함된 항목만 필터링
+const filteredWeatherList = computed(() =>
+  weatherList.value.filter((city) => city.name.includes(searchQuery.value)),
+)
+
+// 1 / 4. 반응형 상태: 선택된 도시 정보 (카드 클릭 시 채워짐)
+const selectedCityInfo = ref(null)
+const selectCity = (city) => {
+  selectedCityInfo.value = city
 }
 
 // 4. 이벤트: 상세보기 버튼 클릭 시 날씨 정보 alert (카드 클릭과 버블링되지 않도록 별도 처리)
 const showDetail = (cityName, status) => {
   window.alert(`${cityName}의 현재 날씨는 [${status}] 상태입니다.`)
 }
+
+// 3. watch: 상태바 문구(selectedCityInfo)가 바뀔 때마다 콘솔로그
+watch(selectedCityInfo, (city) => {
+  const message = city ? `${city.name}이 선택되었습니다.` : '카드를 클릭하거나 검색해 보세요.'
+  console.log('[watch] 상태바 문구 변경:', message)
+})
+
+// 3. watchEffect: 검색어(searchQuery)가 바뀔 때마다 자동으로 추적해서 콘솔로그
+watchEffect(() => {
+  console.log('[watchEffect] searchQuery:', searchQuery.value)
+})
+
+// 5. 본인만의 반응형 상태: 기온 정렬 순서
+const sortOrder = ref('desc')
+const toggleSortOrder = () => {
+  sortOrder.value = sortOrder.value === 'desc' ? 'asc' : 'desc'
+}
+
+// 5. 본인만의 computed: 검색 결과를 정렬 순서에 따라 정렬
+const sortedWeatherList = computed(() =>
+  [...filteredWeatherList.value].sort((a, b) =>
+    sortOrder.value === 'asc' ? a.temp - b.temp : b.temp - a.temp,
+  ),
+)
+
+// 5. 본인만의 watch: 정렬 순서가 바뀔 때마다 콘솔로그
+watch(sortOrder, (order) => {
+  console.log('[watch] 정렬 순서 변경:', order === 'asc' ? '오름차순' : '내림차순')
+})
 </script>
 
 <template>
@@ -66,19 +100,29 @@ const showDetail = (cityName, status) => {
           class="search"
           type="text"
           placeholder="검색할 도시 이름 입력"
-          :value="keyword"
+          :value="searchQuery"
           @input="onInput"
         />
       </div>
-      <p class="search__echo">검색 중인 도시: {{ keyword || '없음' }}</p>
+      <p class="search__echo">검색 중인 도시: {{ searchQuery || '없음' }}</p>
     </section>
 
     <section class="panel">
-      <h3 class="panel__title">📋 지역별 날씨 현황</h3>
-      <!-- 1. v-for로 날씨 카드 반복 렌더링, :key에 id 바인딩 -->
-      <ul class="card-list">
+      <div class="panel__row">
+        <h3 class="panel__title">📋 지역별 날씨 현황</h3>
+        <!-- 5. 본인만의 상태(sortOrder)를 토글하는 버튼 -->
+        <button class="sort-btn" @click="toggleSortOrder">
+          기온 {{ sortOrder === 'asc' ? '오름차순 ⬆️' : '내림차순 ⬇️' }}
+        </button>
+      </div>
+      <!-- 4. 검색어와 일치하는 도시가 없을 때 안내 문구 -->
+      <p v-if="filteredWeatherList.length === 0" class="empty">
+        "{{ searchQuery }}"와 일치하는 도시가 없습니다.
+      </p>
+      <!-- 1 / 2 / 4. v-for로 filteredWeatherList(검색어 비었으면 전체) 렌더링, :key에 id 바인딩 -->
+      <ul v-else class="card-list">
         <li
-          v-for="city in weatherList"
+          v-for="city in sortedWeatherList"
           :key="city.id"
           class="card"
           :class="
@@ -90,7 +134,7 @@ const showDetail = (cityName, status) => {
                   ? 'card--mild'
                   : 'card--warm'
           "
-          @click="selectCity(city.name)"
+          @click="selectCity(city)"
         >
           <!-- 4. 카드 클릭 이벤트(@click)와 버튼 클릭(@click.stop)이 서로 버블링 없이 동작 -->
           <div class="card__row">
@@ -129,7 +173,11 @@ const showDetail = (cityName, status) => {
 
     <!-- 4. 상태바: 선택된 도시 표시 -->
     <p class="notice">
-      {{ selectedCity ? `${selectedCity}이 선택되었습니다.` : '카드를 클릭하거나 검색해 보세요.' }}
+      {{
+        selectedCityInfo
+          ? `${selectedCityInfo.name}이 선택되었습니다.`
+          : '카드를 클릭하거나 검색해 보세요.'
+      }}
     </p>
   </div>
 </template>
@@ -173,6 +221,24 @@ const showDetail = (cityName, status) => {
   margin: 0 0 10px;
 }
 
+.panel__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.sort-btn {
+  border: 1px solid #c7d2fe;
+  background: #fff;
+  color: #4338ca;
+  border-radius: 999px;
+  padding: 4px 10px;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  margin-bottom: 10px;
+}
+
 .search-wrap {
   position: relative;
 }
@@ -207,6 +273,13 @@ const showDetail = (cityName, status) => {
   color: #6366f1;
   margin: 10px 0 0;
   font-weight: 500;
+}
+
+.empty {
+  text-align: center;
+  color: #94a3b8;
+  font-size: 13px;
+  padding: 20px 0;
 }
 
 .card-list {
