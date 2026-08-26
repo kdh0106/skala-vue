@@ -1,4 +1,4 @@
-# Hands on - Weather Component (3일차)
+# Hands on - Weather Component (2일차)
 
 기능 변경 없이 4개의 Component 파일로 분리한다.
 
