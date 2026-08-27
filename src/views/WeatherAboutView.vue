@@ -2,17 +2,18 @@
 
 <template>
   <div class="app">
-    <h2 class="app__title">⛅️ 과제 4: 라우터 적용</h2>
+    <h2 class="app__title">⛳ 골프장 날씨 (Axios)</h2>
 
     <div class="panel">
       <h3 class="panel__title">ℹ️ 서비스 소개</h3>
       <p class="desc">
-        본 앱은 Vue 3 & Vue Router 4 기반 개발된 실습용 가상 대시보드 서비스입니다.
+        본 앱은 전국 골프장의 실시간 날씨와 일몰 시각을 보여주는 실습용 가상 대시보드 서비스입니다.
       </p>
       <ul class="feature-list">
-        <li>🔍 도시명 검색 &amp; 온도순 정렬</li>
-        <li>🖥️ 반응형 카드 UI로 지역별 날씨 현황 표시</li>
-        <li>🔗 URL 파라미터로 도시별 상세 관측 정보 조회</li>
+        <li>🔍 골프장 이름 검색 &amp; 온도순 정렬</li>
+        <li>🖥️ 반응형 카드 UI로 골프장별 날씨 현황 표시</li>
+        <li>🔗 URL 파라미터로 골프장별 상세 관측 정보 조회</li>
+        <li>🌇 일몰 시각 기반 마지막 티오프 시간 안내</li>
       </ul>
     </div>
 

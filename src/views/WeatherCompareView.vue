@@ -1,77 +1,80 @@
 <script setup>
 import { ref, computed, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { weatherMockData } from '../mocks/weatherMockData'
+import { useWeatherStore } from '../stores/weatherStore'
 
 // 본인 추가 view: 두 도시를 쿼리스트링(?a=cityId&b=cityId)으로 비교
 const route = useRoute()
 const router = useRouter()
+const weatherStore = useWeatherStore()
 
-const cityIdA = ref(route.query.a || weatherMockData[0].id)
-const cityIdB = ref(route.query.b || weatherMockData[1].id)
+const cityIdA = ref(route.query.a || weatherStore.cities[0].id)
+const cityIdB = ref(route.query.b || weatherStore.cities[1].id)
 
-const cityA = computed(() => weatherMockData.find((city) => city.id === cityIdA.value))
-const cityB = computed(() => weatherMockData.find((city) => city.id === cityIdB.value))
+const cityA = computed(() => weatherStore.getCityById(cityIdA.value))
+const cityB = computed(() => weatherStore.getCityById(cityIdB.value))
+const currentA = computed(() => weatherStore.currentByCityId[cityIdA.value])
+const currentB = computed(() => weatherStore.currentByCityId[cityIdB.value])
 
-// 선택이 바뀔 때마다 URL 쿼리스트링에 반영 (뒤로가기 이력이 쌓이지 않도록 replace 사용)
-watch([cityIdA, cityIdB], ([a, b]) => {
-  router.replace({ query: { a, b } })
-})
+// 선택된 두 도시의 실시간 날씨를 불러오고, 선택이 바뀔 때마다 URL 쿼리스트링에도 반영
+watch(
+  [cityIdA, cityIdB],
+  ([a, b]) => {
+    weatherStore.fetchCurrentWeatherFor(a)
+    weatherStore.fetchCurrentWeatherFor(b)
+    router.replace({ query: { a, b } }) // replace를 써서 히스토리가 안 쌓이게 함
+  },
+  { immediate: true },
+)
 
 const rows = computed(() => [
   {
     label: '🌡 기온',
-    a: `${cityA.value.temp}°C`,
-    b: `${cityB.value.temp}°C`,
-    higherIsA: cityA.value.temp > cityB.value.temp,
+    a: `${currentA.value.temp}°C`,
+    b: `${currentB.value.temp}°C`,
+    higherIsA: currentA.value.temp > currentB.value.temp,
   },
   {
     label: '💧 습도',
-    a: `${cityA.value.humidity}%`,
-    b: `${cityB.value.humidity}%`,
-    higherIsA: cityA.value.humidity > cityB.value.humidity,
-  },
-  {
-    label: '☔ 강수확률',
-    a: `${cityA.value.rainChance}%`,
-    b: `${cityB.value.rainChance}%`,
-    higherIsA: cityA.value.rainChance > cityB.value.rainChance,
+    a: `${currentA.value.humidity}%`,
+    b: `${currentB.value.humidity}%`,
+    higherIsA: currentA.value.humidity > currentB.value.humidity,
   },
   {
     label: '🍃 풍속',
-    a: `${cityA.value.windSpeed}m/s`,
-    b: `${cityB.value.windSpeed}m/s`,
-    higherIsA: cityA.value.windSpeed > cityB.value.windSpeed,
+    a: `${currentA.value.windSpeed}m/s`,
+    b: `${currentB.value.windSpeed}m/s`,
+    higherIsA: currentA.value.windSpeed > currentB.value.windSpeed,
   },
 ])
 </script>
 
 <template>
   <div class="app">
-    <h2 class="app__title">⛅️ 과제 4: 라우터 적용</h2>
+    <h2 class="app__title">⛳ 골프장 날씨 (Axios)</h2>
 
     <div class="panel">
-      <h3 class="panel__title">🆚 도시 비교</h3>
+      <h3 class="panel__title">🆚 골프장 비교</h3>
       <div class="picker-row">
         <select v-model="cityIdA" class="picker">
-          <option v-for="city in weatherMockData" :key="city.id" :value="city.id">
+          <option v-for="city in weatherStore.cities" :key="city.id" :value="city.id">
             {{ city.name }}
           </option>
         </select>
         <span class="vs">VS</span>
         <select v-model="cityIdB" class="picker">
-          <option v-for="city in weatherMockData" :key="city.id" :value="city.id">
+          <option v-for="city in weatherStore.cities" :key="city.id" :value="city.id">
             {{ city.name }}
           </option>
         </select>
       </div>
 
-      <table class="compare-table">
+      <table v-if="currentA && currentB" class="compare-table">
         <thead>
           <tr>
-            <th>{{ cityA.name }}({{ cityA.status }})</th>
+            <th>{{ cityA.name }}({{ currentA.status }})</th>
             <th></th>
-            <th>{{ cityB.name }}({{ cityB.status }})</th>
+            <th>{{ cityB.name }}({{ currentB.status }})</th>
           </tr>
         </thead>
         <tbody>
@@ -82,6 +85,8 @@ const rows = computed(() => [
           </tr>
         </tbody>
       </table>
+      <p v-else-if="weatherStore.error" class="empty empty--error">{{ weatherStore.error }}</p>
+      <p v-else class="empty">날씨 정보를 불러오는 중...</p>
     </div>
 
     <RouterLink to="/" class="back-btn">← 메인 대시보드로 돌아가기</RouterLink>
@@ -180,6 +185,17 @@ const rows = computed(() => [
 .compare-table td.highlight {
   color: #4338ca;
   font-weight: 700;
+}
+
+.empty {
+  text-align: center;
+  color: #94a3b8;
+  font-size: 13px;
+  padding: 20px 0;
+}
+
+.empty--error {
+  color: #dc2626;
 }
 
 .back-btn {

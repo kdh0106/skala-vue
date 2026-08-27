@@ -37,7 +37,8 @@ const displayTemp = computed(() => {
       <button class="card__btn" @click.stop="$emit('click-detail', city)">상세보기</button>
     </div>
     <p class="card__temp">
-      현재 기온: {{ displayTemp }}{{ configStore.unitSymbol }} · 습도 {{ city.humidity }}%
+      현재 기온: {{ displayTemp }}{{ configStore.unitSymbol }} · 습도 {{ city.humidity }}% · 풍속
+      {{ city.windSpeed }}m/s
     </p>
     <div class="card__badges">
       <span v-if="city.temp <= 18" class="card__badge card__badge--cold">
@@ -51,14 +52,13 @@ const displayTemp = computed(() => {
       </span>
       <span v-else class="card__badge card__badge--warm"> 🔥 더움 (30도 초과) </span>
 
-      <span v-if="city.status === '비'" class="card__badge card__badge--rain">
-        ☔ 강수확률 {{ city.rainChance }}% · 강수량 {{ city.rainfall }}mm
-      </span>
-      <span v-else-if="city.status === '눈'" class="card__badge card__badge--rain">
-        ❄️ 강수확률 {{ city.rainChance }}% · 적설량 {{ city.rainfall }}mm
-      </span>
-      <span v-else class="card__badge card__badge--rain-low">
-        ☀️ 강수확률 {{ city.rainChance }}%
+      <span class="card__badge card__badge--status">
+        <img
+          :src="`https://openweathermap.org/img/wn/${city.icon}.png`"
+          class="card__badge__icon"
+          alt=""
+        />
+        {{ city.status }}
       </span>
     </div>
   </li>
@@ -163,12 +163,16 @@ const displayTemp = computed(() => {
   background: linear-gradient(135deg, #60a5fa, #2563eb);
 }
 
-.card__badge--rain {
-  background: linear-gradient(135deg, #94a3b8, #475569);
+.card__badge--status {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: #f1f5f9;
+  color: #475569;
 }
 
-.card__badge--rain-low {
-  background: #f1f5f9;
-  color: #64748b;
+.card__badge__icon {
+  width: 16px;
+  height: 16px;
 }
 </style>

@@ -6,9 +6,9 @@ import UnitToggler from './components/exercise/UnitToggler.vue'
   <div class="page">
     <div class="topbar">
       <nav class="nav">
-        <RouterLink to="/" class="nav__link">📋 날씨 대시보드</RouterLink>
+        <RouterLink to="/" class="nav__link">⛳ 골프장 날씨</RouterLink>
         <RouterLink to="/about" class="nav__link">ℹ️ 서비스 소개</RouterLink>
-        <RouterLink to="/compare" class="nav__link">🆚 도시 비교</RouterLink>
+        <RouterLink to="/compare" class="nav__link">🆚 골프장 비교</RouterLink>
       </nav>
       <UnitToggler />
     </div>

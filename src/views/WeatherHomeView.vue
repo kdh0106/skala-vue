@@ -1,15 +1,20 @@
 <script setup>
-import { ref, computed, watch, watchEffect } from 'vue'
+import { ref, computed, watch, watchEffect, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { weatherMockData } from '../mocks/weatherMockData'
+import { useWeatherStore } from '../stores/weatherStore'
 import BaseDashboardCard from '../components/exercise/BaseDashboardCard.vue'
 import SearchBar from '../components/exercise/SearchBar.vue'
 import WeatherCard from '../components/exercise/WeatherCard.vue'
 
 const router = useRouter()
+const weatherStore = useWeatherStore()
 
-// 모든 반응형 데이터는 WeatherHomeView가 유지 (기존 WeatherParent 역할 대체)
-const weatherList = ref(weatherMockData)
+// 날씨 데이터는 weatherStore가 OpenWeatherMap API로 채움 (Home/Detail이 공유)
+const weatherList = computed(() => weatherStore.citiesWithWeather)
+
+onMounted(() => {
+  weatherStore.fetchAllCurrent()
+})
 
 const searchQuery = ref('')
 const onUpdateQuery = (value) => {
@@ -57,22 +62,24 @@ watch(sortOrder, (order) => {
 
 <template>
   <div class="app">
-    <h2 class="app__title">⛅️ 과제 4: 라우터 적용</h2>
+    <h2 class="app__title">⛳ 골프장 날씨 (Axios)</h2>
 
-    <BaseDashboardCard title="🔍 도시 검색">
+    <BaseDashboardCard title="🔍 골프장 검색">
       <SearchBar :search-query="searchQuery" @update-query="onUpdateQuery" />
-      <p class="search__echo">검색 중인 도시: {{ searchQuery || '없음' }}</p>
+      <p class="search__echo">검색 중인 골프장: {{ searchQuery || '없음' }}</p>
     </BaseDashboardCard>
 
-    <BaseDashboardCard title="📋 지역별 날씨 현황">
+    <BaseDashboardCard title="📋 골프장별 날씨 현황">
       <template #extra>
         <button class="sort-btn" @click="toggleSortOrder">
           기온 {{ sortOrder === 'asc' ? '오름차순 ⬆️' : '내림차순 ⬇️' }}
         </button>
       </template>
 
-      <p v-if="filteredWeatherList.length === 0" class="empty">
-        "{{ searchQuery }}"와 일치하는 도시가 없습니다.
+      <p v-if="weatherStore.loading" class="empty">날씨 정보를 불러오는 중...</p>
+      <p v-else-if="weatherStore.error" class="empty empty--error">{{ weatherStore.error }}</p>
+      <p v-else-if="filteredWeatherList.length === 0" class="empty">
+        "{{ searchQuery }}"와 일치하는 골프장이 없습니다.
       </p>
       <ul v-else class="card-list">
         <WeatherCard
@@ -130,6 +137,10 @@ watch(sortOrder, (order) => {
   color: #94a3b8;
   font-size: 13px;
   padding: 20px 0;
+}
+
+.empty--error {
+  color: #dc2626;
 }
 
 .card-list {

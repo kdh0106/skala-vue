@@ -13,7 +13,7 @@ defineEmits(['update-query'])
     <input
       class="search"
       type="text"
-      placeholder="검색할 도시 이름 입력"
+      placeholder="검색할 골프장 이름 입력"
       :value="searchQuery"
       @input="$emit('update-query', $event.target.value)"
     />
