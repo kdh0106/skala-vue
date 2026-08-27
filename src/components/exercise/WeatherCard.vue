@@ -1,5 +1,6 @@
 <script setup>
 import { computed } from 'vue'
+import { useConfigStore } from '../../stores/configStore'
 
 // 선택된 도시 객체를 부모로부터 전달받아 표시 (props)
 const props = defineProps({
@@ -9,12 +10,23 @@ const props = defineProps({
 // 카드 선택(select-card), 상세보기 클릭(click-detail)을 부모에 전달 (emits)
 defineEmits(['select-card', 'click-detail'])
 
+const configStore = useConfigStore()
+
+// 온도 구간 분류는 원본(섭씨) 기준 그대로 유지, 화면 표시만 단위 설정을 따름
 const tempClass = computed(() => {
   const t = props.city.temp
   if (t <= 18) return 'card--cold'
   if (t <= 25) return 'card--cool'
   if (t <= 30) return 'card--mild'
   return 'card--warm'
+})
+
+const displayTemp = computed(() => {
+  const rawTemp = props.city.temp // 기본 원본 데이터는 섭씨 숫자
+  if (configStore.unit === 'fahrenheit') {
+    return Math.round((rawTemp * 9) / 5 + 32) // 화씨 변환 연산
+  }
+  return rawTemp // 'celsius'일 때는 원본 그대로 반환
 })
 </script>
 
@@ -24,7 +36,9 @@ const tempClass = computed(() => {
       <span class="card__name">{{ city.name }}({{ city.status }})</span>
       <button class="card__btn" @click.stop="$emit('click-detail', city)">상세보기</button>
     </div>
-    <p class="card__temp">현재 기온: {{ city.temp }}°C · 습도 {{ city.humidity }}%</p>
+    <p class="card__temp">
+      현재 기온: {{ displayTemp }}{{ configStore.unitSymbol }} · 습도 {{ city.humidity }}%
+    </p>
     <div class="card__badges">
       <span v-if="city.temp <= 18" class="card__badge card__badge--cold">
         ❄️ 추움 (18도 이하)

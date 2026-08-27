@@ -1,12 +1,17 @@
-<script setup></script>
+<script setup>
+import UnitToggler from './components/exercise/UnitToggler.vue'
+</script>
 
 <template>
   <div class="page">
-    <nav class="nav">
-      <RouterLink to="/" class="nav__link">📋 날씨 대시보드</RouterLink>
-      <RouterLink to="/about" class="nav__link">ℹ️ 서비스 소개</RouterLink>
-      <RouterLink to="/compare" class="nav__link">🆚 도시 비교</RouterLink>
-    </nav>
+    <div class="topbar">
+      <nav class="nav">
+        <RouterLink to="/" class="nav__link">📋 날씨 대시보드</RouterLink>
+        <RouterLink to="/about" class="nav__link">ℹ️ 서비스 소개</RouterLink>
+        <RouterLink to="/compare" class="nav__link">🆚 도시 비교</RouterLink>
+      </nav>
+      <UnitToggler />
+    </div>
     <RouterView />
   </div>
 </template>
@@ -21,10 +26,20 @@
   background: linear-gradient(135deg, #eef2ff 0%, #e0e7ff 100%);
 }
 
+.topbar {
+  width: 100%;
+  max-width: 640px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
 .nav {
   display: flex;
   gap: 8px;
-  margin-bottom: 24px;
 }
 
 .nav__link {
