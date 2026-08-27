@@ -1,21 +1,14 @@
 ## 2일차 실습 (Weather Composition) 주요 내용
 
-- `selectedCityInfo`: 문자열 대신 도시 객체 전체를 저장하도록 변경
-- `filteredWeatherList`(computed): `includes('')`가 항상 참이라 검색어 없으면 자동으로 전체 목록 출력
+- `selectedCityInfo`: 문자열 대신 도시 객체 전체를 저장
 - `selectedCityInfo`는 `watch`, `searchQuery`는 `watchEffect`로 구분해서 감시
-- `sortedWeatherList` = `filteredWeatherList`에 정렬을 얹은 파생 상태
-- 정렬 기능(`sortOrder`/`toggleSortOrder`/`sortedWeatherList`)은 자율 추가 항목 (요구사항 5번)
+- 정렬 기능(`sortOrder`/`sortedWeatherList`)은 자율 추가 항목 (요구사항 5번)
 
 ## 2일차 실습 (Weather Router) 주요 내용
 
-- Mock 데이터를 `src/mocks/weatherMockData.js` 하나로 공유 (Home/Detail/Compare 세 뷰가 같이 참조)
-- 모든 라우트를 `component: () => import(...)`로 통일해 Lazy Loading 적용
-- Catch-all은 Vue Router 3의 `path: '*'` 대신 `/:pathMatch(.*)*` 문법 사용
-- `WeatherDetailView`는 `onMounted`에서만 도시 조회 (상세→상세 직접 이동 시엔 안 바뀌지만, 지금 구조에선 항상 홈에서 진입해서 무관)
-- `WeatherCompareView`는 `router.push` 대신 `replace`로 쿼리스트링 갱신(히스토리 안 쌓이게)
-- 안 쓰이던 Vite 스캐폴드 `HomeView.vue`/`AboutView.vue` 삭제
-- `components/exercise/`는 `practices/component/` 복사본, `click-detail` emit이 `(name, status)` 대신 도시 객체 전체로 변경(상세 이동에 `id` 필요해서)
-- `compare` view는 쿼리 파라미터를 다루는 자율 추가 항목 (요구사항 6번)
+- Mock 데이터를 `src/mocks/weatherMockData.js`로 공유, 모든 라우트는 `import()`로 Lazy Loading + `/:pathMatch(.*)*` catch-all 적용
+- `WeatherDetailView`는 `onMounted`에서만 도시 조회 (상세→상세 직접 이동 시 안 바뀌는 한계 있지만 지금 구조에선 무관)
+- 자율 추가 view(요구사항 6번)는 통계 요약 페이지 대신 쿼리스트링(`?a=&b=`) 기반 도시 비교 페이지로 선택 — 상세 페이지가 이미 다루는 경로 파라미터와 다른 방식(쿼리 파라미터)을 연습해보고 싶어서
 
 ## Troubleshooting
 
