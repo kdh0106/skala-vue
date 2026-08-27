@@ -1,7 +1,3 @@
-# skala-vue
-
-This template should help get you started developing with Vue 3 in Vite.
-
 ## 2일차 실습 (Weather Composition) 주요 내용
 
 `WeatherMockup.vue`에 반응형 상태 관리/computed/watch를 추가한 커밋. 헷갈릴 수 있는 부분 정리.
