@@ -33,6 +33,34 @@ export async function fetchForecast(lat, lon) {
     }))
 }
 
+// OpenWeatherMap 추가 API: 대기질(미세먼지) — 기존 OpenWeatherMap 키 그대로 재사용
+const AQI_LABELS = { 1: '좋음', 2: '보통', 3: '민감군 주의', 4: '나쁨', 5: '매우 나쁨' }
+
+// 환경부 통합대기환경지수 PM2.5 기준 등급 (OpenWeatherMap 자체 aqi 지수와는 별개 산정 기준)
+function getPm25Level(pm25) {
+  if (pm25 <= 15) return '좋음'
+  if (pm25 <= 35) return '보통'
+  if (pm25 <= 75) return '나쁨'
+  return '매우 나쁨'
+}
+
+export async function fetchAirQuality(lat, lon) {
+  const { data } = await axios.get(`${BASE_URL}/air_pollution`, {
+    params: { lat, lon, appid: API_KEY },
+  })
+  const [entry] = data.list
+  const pm25 = Math.round(entry.components.pm2_5)
+  const pm10 = Math.round(entry.components.pm10)
+  return {
+    aqi: entry.main.aqi, // 1~5 (OpenWeatherMap 자체 지수)
+    aqiLabel: AQI_LABELS[entry.main.aqi] ?? '알 수 없음',
+    pm25,
+    pm10,
+    pm25Level: getPm25Level(pm25), // 환경부 기준 등급 (추가 정보)
+    maskRecommended: pm25 > 35, // 마스크 착용 권장 여부 (추가 정보)
+  }
+}
+
 // 3. 기타 외부 API: 일몰 시각 → 마지막 티오프 권장 시각(일몰 1시간 전) 계산 (키 없이 쓸 수 있는 무료 API)
 export async function fetchSunset(lat, lon) {
   const { data } = await axios.get('https://api.sunrise-sunset.org/json', {

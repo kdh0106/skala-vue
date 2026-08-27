@@ -63,6 +63,7 @@ const roundingTip = computed(() => {
       <div class="card__stats">
         <span>💧 {{ city.humidity }}%</span>
         <span>🍃 {{ city.windSpeed }}m/s</span>
+        <span v-if="city.airQuality">🌫️ {{ city.airQuality.aqiLabel }}</span>
       </div>
 
       <p class="card__tip">{{ roundingTip }}</p>

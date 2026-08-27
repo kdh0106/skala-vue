@@ -32,6 +32,10 @@
 - OpenWeatherMap 추가 API(요구사항 2번)는 5일 예보(Forecast) 엔드포인트를 붙여서 상세 페이지에 표시
 - 기타 외부 API(요구사항 3번)는 환율 → Giphy(짤) 순으로 시도했다가 둘 다 골프장 컨셉과 안 맞아서 제거하고, 최종적으로 **일몰 API(sunrise-sunset.org)**로 "마지막 티오프 권장 시각"(일몰 1시간 전)을 계산해서 상세 페이지에 표시
 - API 키(OpenWeatherMap)는 프로젝트 루트 `.env.local`(`VITE_OPENWEATHER_API_KEY`)에 저장, `import.meta.env`로 읽음 (`.gitignore`의 `*.local` 규칙 덕분에 커밋 안 됨). 일몰 API는 키가 필요 없음
+- 배포 이후 자율적으로 **미세먼지(Air Pollution) API**도 추가 — 기존 OpenWeatherMap 키를 그대로 재사용해서 새 가입 없이 확장
+  - PM2.5 농도로 환경부 기준 등급(좋음/보통/나쁨/매우나쁨)을 직접 계산해서 OpenWeatherMap 자체 AQI 지수와 같이 표시
+  - PM2.5 35㎍/m³ 초과 시 마스크 착용 권장 문구 표시
+  - Home 배너에 "대기질 양호 골프장 수" 통계 추가, Compare 페이지 비교 표에 PM2.5 행 추가
 
 ### 🎨 3일차 · Weather UI Library
 

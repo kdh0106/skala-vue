@@ -68,6 +68,10 @@ const averageTemp = computed(() => {
 const goodRoundingCount = computed(
   () => weatherList.value.filter((city) => city.temp > 18 && city.temp <= 30).length,
 )
+// 미세먼지 API 기반 추가 정보: 대기질 좋음/보통인 골프장 수
+const cleanAirCount = computed(
+  () => weatherList.value.filter((city) => city.airQuality && city.airQuality.aqi <= 2).length,
+)
 </script>
 
 <template>
@@ -89,6 +93,10 @@ const goodRoundingCount = computed(
         <div class="stat stat--highlight">
           <span class="stat__value">{{ goodRoundingCount }}</span>
           <span class="stat__label">라운딩 추천</span>
+        </div>
+        <div class="stat">
+          <span class="stat__value">🌫️ {{ cleanAirCount }}</span>
+          <span class="stat__label">대기질 양호</span>
         </div>
       </div>
     </section>

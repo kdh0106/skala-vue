@@ -1,6 +1,11 @@
 import { defineStore } from 'pinia'
 import { cityList } from '../mocks/cityList'
-import { fetchCurrentWeather, fetchForecast, fetchSunset } from '../services/weatherApi'
+import {
+  fetchCurrentWeather,
+  fetchForecast,
+  fetchSunset,
+  fetchAirQuality,
+} from '../services/weatherApi'
 
 export const useWeatherStore = defineStore('weather', {
   state: () => ({
@@ -8,6 +13,7 @@ export const useWeatherStore = defineStore('weather', {
     currentByCityId: {}, // { [cityId]: { temp, humidity, status, icon, windSpeed } }
     forecastByCityId: {}, // { [cityId]: [{ date, temp, status, icon }, ...] }
     sunsetByCityId: {}, // { [cityId]: { sunset, lastTeeTime } } — 기타 외부 API(일몰)
+    airQualityByCityId: {}, // { [cityId]: { aqi, aqiLabel, pm25, pm10 } } — OpenWeatherMap 추가 API(대기질)
     loading: false,
     error: null,
   }),
@@ -16,7 +22,11 @@ export const useWeatherStore = defineStore('weather', {
     citiesWithWeather: (state) =>
       state.cities
         .filter((city) => state.currentByCityId[city.id])
-        .map((city) => ({ ...city, ...state.currentByCityId[city.id] })),
+        .map((city) => ({
+          ...city,
+          ...state.currentByCityId[city.id],
+          airQuality: state.airQualityByCityId[city.id],
+        })),
   },
   actions: {
     getCityById(cityId) {
@@ -27,10 +37,17 @@ export const useWeatherStore = defineStore('weather', {
       this.error = null
       try {
         const results = await Promise.all(
-          this.cities.map((city) => fetchCurrentWeather(city.lat, city.lon)),
+          this.cities.map((city) =>
+            Promise.all([
+              fetchCurrentWeather(city.lat, city.lon),
+              fetchAirQuality(city.lat, city.lon),
+            ]),
+          ),
         )
         this.cities.forEach((city, index) => {
-          this.currentByCityId[city.id] = results[index]
+          const [current, airQuality] = results[index]
+          this.currentByCityId[city.id] = current
+          this.airQualityByCityId[city.id] = airQuality
         })
       } catch (err) {
         this.error = 'OpenWeatherMap에서 날씨를 불러오지 못했습니다. API 키를 확인해주세요.'
@@ -62,6 +79,17 @@ export const useWeatherStore = defineStore('weather', {
         console.error(err)
       }
       return this.forecastByCityId[cityId] ?? null
+    },
+    async fetchAirQualityFor(cityId) {
+      if (this.airQualityByCityId[cityId]) return this.airQualityByCityId[cityId]
+      const city = this.getCityById(cityId)
+      if (!city) return null
+      try {
+        this.airQualityByCityId[cityId] = await fetchAirQuality(city.lat, city.lon)
+      } catch (err) {
+        console.error(err)
+      }
+      return this.airQualityByCityId[cityId] ?? null
     },
     async fetchSunsetFor(cityId) {
       if (this.sunsetByCityId[cityId]) return this.sunsetByCityId[cityId]

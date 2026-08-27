@@ -9,17 +9,22 @@ const router = useRouter()
 const configStore = useConfigStore()
 const weatherStore = useWeatherStore()
 
-// Mount 시점에 동적 경로 파라미터(cityId)로 실시간 날씨 + 5일 예보 + 일몰 조회
+// Mount 시점에 동적 경로 파라미터(cityId)로 실시간 날씨 + 5일 예보 + 일몰 + 대기질 조회
 const city = computed(() => weatherStore.getCityById(route.params.cityId))
 const current = computed(() => weatherStore.currentByCityId[route.params.cityId])
 const forecast = computed(() => weatherStore.forecastByCityId[route.params.cityId])
 const sunset = computed(() => weatherStore.sunsetByCityId[route.params.cityId])
+const airQuality = computed(() => weatherStore.airQualityByCityId[route.params.cityId])
 
 onMounted(() => {
   weatherStore.fetchCurrentWeatherFor(route.params.cityId)
   weatherStore.fetchForecastFor(route.params.cityId) // OpenWeatherMap 추가 API: 5일 예보
+  weatherStore.fetchAirQualityFor(route.params.cityId) // OpenWeatherMap 추가 API: 대기질
   weatherStore.fetchSunsetFor(route.params.cityId) // 기타 외부 API: 일몰 → 마지막 티오프 시각
 })
+
+const AQI_COLORS = { 1: '#40916c', 2: '#84cc16', 3: '#f59e0b', 4: '#f97316', 5: '#ef4444' }
+const aqiColor = computed(() => AQI_COLORS[airQuality.value?.aqi] ?? '#94a3b8')
 
 const displayTemp = computed(() => {
   const rawTemp = current.value.temp // 기본 원본 데이터는 섭씨 숫자
@@ -103,6 +108,23 @@ const displayWindSpeed = computed(() => {
           </div>
         </div>
       </section>
+
+      <el-card v-if="airQuality" class="panel" shadow="never">
+        <template #header>
+          <span class="panel__title">🌫️ 대기질 정보</span>
+        </template>
+        <div class="aqi-row">
+          <el-tag :color="aqiColor" effect="dark" round>{{ airQuality.aqiLabel }}</el-tag>
+          <span class="aqi-row__item"
+            >PM2.5 {{ airQuality.pm25 }}㎍/m³ ({{ airQuality.pm25Level }})</span
+          >
+          <span class="aqi-row__item">PM10 {{ airQuality.pm10 }}㎍/m³</span>
+        </div>
+        <p v-if="airQuality.maskRecommended" class="aqi-tip">
+          😷 미세먼지 농도가 높아요, 마스크 착용을 권장해요
+        </p>
+        <p v-else class="aqi-tip">🌿 대기질이 양호해요, 편하게 라운딩하세요</p>
+      </el-card>
 
       <el-card v-if="forecast" class="panel" shadow="never">
         <template #header>
@@ -262,6 +284,23 @@ const displayWindSpeed = computed(() => {
 
 .panel {
   margin-bottom: 14px;
+}
+
+.aqi-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 13px;
+  color: #475569;
+}
+
+.aqi-tip {
+  font-size: 11px;
+  color: var(--golf-green-700);
+  background: var(--golf-green-100);
+  border-radius: 8px;
+  padding: 6px 8px;
+  margin: 10px 0 0;
 }
 
 .panel__title {

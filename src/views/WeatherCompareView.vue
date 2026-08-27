@@ -15,13 +15,17 @@ const cityA = computed(() => weatherStore.getCityById(cityIdA.value))
 const cityB = computed(() => weatherStore.getCityById(cityIdB.value))
 const currentA = computed(() => weatherStore.currentByCityId[cityIdA.value])
 const currentB = computed(() => weatherStore.currentByCityId[cityIdB.value])
+const airA = computed(() => weatherStore.airQualityByCityId[cityIdA.value])
+const airB = computed(() => weatherStore.airQualityByCityId[cityIdB.value])
 
-// 선택된 두 도시의 실시간 날씨를 불러오고, 선택이 바뀔 때마다 URL 쿼리스트링에도 반영
+// 선택된 두 도시의 실시간 날씨 + 대기질을 불러오고, 선택이 바뀔 때마다 URL 쿼리스트링에도 반영
 watch(
   [cityIdA, cityIdB],
   ([a, b]) => {
     weatherStore.fetchCurrentWeatherFor(a)
     weatherStore.fetchCurrentWeatherFor(b)
+    weatherStore.fetchAirQualityFor(a) // 미세먼지 API 기반 추가 정보
+    weatherStore.fetchAirQualityFor(b)
     router.replace({ query: { a, b } }) // replace를 써서 히스토리가 안 쌓이게 함
   },
   { immediate: true },
@@ -46,6 +50,17 @@ const rows = computed(() => [
     b: `${currentB.value.windSpeed}m/s`,
     higherIsA: currentA.value.windSpeed > currentB.value.windSpeed,
   },
+  // 미세먼지 API 기반 추가 정보: PM2.5 비교 (둘 다 불러와졌을 때만 표시)
+  ...(airA.value && airB.value
+    ? [
+        {
+          label: '🌫️ 미세먼지',
+          a: `${airA.value.pm25}㎍/m³ (${airA.value.pm25Level})`,
+          b: `${airB.value.pm25}㎍/m³ (${airB.value.pm25Level})`,
+          higherIsA: airA.value.pm25 > airB.value.pm25,
+        },
+      ]
+    : []),
 ])
 </script>
 
