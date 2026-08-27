@@ -1,10 +1,13 @@
-<script setup>
-import WeatherParent from './components/practices/component/WeatherParent.vue'
-</script>
+<script setup></script>
 
 <template>
   <div class="page">
-    <WeatherParent />
+    <nav class="nav">
+      <RouterLink to="/" class="nav__link">📋 날씨 대시보드</RouterLink>
+      <RouterLink to="/about" class="nav__link">ℹ️ 서비스 소개</RouterLink>
+      <RouterLink to="/compare" class="nav__link">🆚 도시 비교</RouterLink>
+    </nav>
+    <RouterView />
   </div>
 </template>
 
@@ -12,71 +15,32 @@ import WeatherParent from './components/practices/component/WeatherParent.vue'
 .page {
   min-height: 100vh;
   display: flex;
+  flex-direction: column;
   align-items: center;
-  justify-content: center;
   padding: 20px;
   background: linear-gradient(135deg, #eef2ff 0%, #e0e7ff 100%);
 }
 
-header {
-  line-height: 1.5;
-  max-height: 100vh;
+.nav {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 24px;
 }
 
-.logo {
-  display: block;
-  margin: 0 auto 2rem;
+.nav__link {
+  background: #fff;
+  color: #4338ca;
+  border: 1px solid #c7d2fe;
+  border-radius: 999px;
+  padding: 8px 16px;
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
 }
 
-nav {
-  width: 100%;
-  font-size: 12px;
-  text-align: center;
-  margin-top: 2rem;
-}
-
-nav a.router-link-exact-active {
-  color: var(--color-text);
-}
-
-nav a.router-link-exact-active:hover {
-  background-color: transparent;
-}
-
-nav a {
-  display: inline-block;
-  padding: 0 1rem;
-  border-left: 1px solid var(--color-border);
-}
-
-nav a:first-of-type {
-  border: 0;
-}
-
-@media (min-width: 1024px) {
-  header {
-    display: flex;
-    place-items: center;
-    padding-right: calc(var(--section-gap) / 2);
-  }
-
-  .logo {
-    margin: 0 2rem 0 0;
-  }
-
-  header .wrapper {
-    display: flex;
-    place-items: flex-start;
-    flex-wrap: wrap;
-  }
-
-  nav {
-    text-align: left;
-    margin-left: -1rem;
-    font-size: 1rem;
-
-    padding: 1rem 0;
-    margin-top: 1rem;
-  }
+.nav__link.router-link-exact-active {
+  background: #4338ca;
+  color: #fff;
+  border-color: #4338ca;
 }
 </style>
