@@ -1,0 +1,20 @@
+:root {
+  --golf-green-950: #0b2e1f;
+  --golf-green-800: #1b4332;
+  --golf-green-700: #2d6a4f;
+  --golf-green-500: #40916c;
+  --golf-green-300: #74c69d;
+  --golf-green-100: #d8f3dc;
+  --golf-sand: #e9c46a;
+  --golf-sand-dark: #c9962f;
+  --golf-sky: #48cae4;
+
+  /* Element Plus 기본 파란색 대신 골프장 그린 톤으로 통일 */
+  --el-color-primary: #2d6a4f;
+  --el-color-primary-light-3: #52b788;
+  --el-color-primary-light-5: #74c69d;
+  --el-color-primary-light-7: #b7e4c7;
+  --el-color-primary-light-8: #d8f3dc;
+  --el-color-primary-light-9: #ecf9f0;
+  --el-color-primary-dark-2: #1b4332;
+}

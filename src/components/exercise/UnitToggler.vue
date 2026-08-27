@@ -6,10 +6,12 @@ const configStore = useConfigStore()
 
 <template>
   <div class="unit-toggler">
-    <span class="unit-toggler__label">
+    <el-tag round effect="plain">
       날씨단위: {{ configStore.unit === 'celsius' ? '섭씨' : '화씨' }}({{ configStore.unitSymbol }})
-    </span>
-    <button class="unit-toggler__btn" @click="configStore.toggleUnit">단위변경</button>
+    </el-tag>
+    <el-button size="small" round type="primary" @click="configStore.toggleUnit">
+      단위변경
+    </el-button>
   </div>
 </template>
 
@@ -18,26 +20,5 @@ const configStore = useConfigStore()
   display: flex;
   align-items: center;
   gap: 8px;
-  background: #fff;
-  border: 1px solid #c7d2fe;
-  border-radius: 999px;
-  padding: 6px 6px 6px 14px;
-}
-
-.unit-toggler__label {
-  font-size: 12px;
-  color: #4338ca;
-  font-weight: 600;
-}
-
-.unit-toggler__btn {
-  border: none;
-  background: #4338ca;
-  color: #fff;
-  border-radius: 999px;
-  padding: 6px 12px;
-  font-size: 12px;
-  font-weight: 600;
-  cursor: pointer;
 }
 </style>

@@ -1,54 +1,86 @@
-<script setup></script>
+<script setup>
+import { useRouter } from 'vue-router'
+
+const router = useRouter()
+</script>
 
 <template>
-  <div class="app">
-    <h2 class="app__title">⛳ 골프장 날씨 (Axios)</h2>
-
-    <div class="panel">
-      <h3 class="panel__title">ℹ️ 서비스 소개</h3>
-      <p class="desc">
-        본 앱은 전국 골프장의 실시간 날씨와 일몰 시각을 보여주는 실습용 가상 대시보드 서비스입니다.
+  <div class="page-body">
+    <section class="page-hero">
+      <h2 class="page-hero__title">⛳ 골프장 웨더 소개</h2>
+      <p class="page-hero__desc">
+        전국 골프장의 실시간 날씨와 일몰 시각을 보여주는 실습용 가상 대시보드 서비스입니다.
       </p>
-      <ul class="feature-list">
-        <li>🔍 골프장 이름 검색 &amp; 온도순 정렬</li>
-        <li>🖥️ 반응형 카드 UI로 골프장별 날씨 현황 표시</li>
-        <li>🔗 URL 파라미터로 골프장별 상세 관측 정보 조회</li>
-        <li>🌇 일몰 시각 기반 마지막 티오프 시간 안내</li>
-      </ul>
-    </div>
+    </section>
 
-    <RouterLink to="/" class="back-btn">← 메인 대시보드로 돌아가기</RouterLink>
+    <el-card class="panel" shadow="never">
+      <template #header>
+        <span class="panel__title">✨ 주요 기능</span>
+      </template>
+      <ul class="feature-list">
+        <li>
+          <span class="feature-list__icon">🔍</span>
+          <div>
+            <p class="feature-list__title">골프장 검색 &amp; 정렬</p>
+            <p class="feature-list__desc">이름으로 검색하고 온도순으로 정렬해서 확인해요.</p>
+          </div>
+        </li>
+        <li>
+          <span class="feature-list__icon">🌤️</span>
+          <div>
+            <p class="feature-list__title">실시간 날씨 카드</p>
+            <p class="feature-list__desc">골프장별 기온·습도·풍속을 카드 형태로 한눈에 확인해요.</p>
+          </div>
+        </li>
+        <li>
+          <span class="feature-list__icon">📅</span>
+          <div>
+            <p class="feature-list__title">상세 관측 정보 &amp; 5일 예보</p>
+            <p class="feature-list__desc">골프장별 페이지에서 상세 날씨와 예보를 조회해요.</p>
+          </div>
+        </li>
+        <li>
+          <span class="feature-list__icon">🌇</span>
+          <div>
+            <p class="feature-list__title">마지막 티오프 시간 안내</p>
+            <p class="feature-list__desc">일몰 시각 기준으로 라운딩 마감 시간을 알려줘요.</p>
+          </div>
+        </li>
+      </ul>
+    </el-card>
+
+    <el-button class="back-btn" round @click="router.push('/')"
+      >← 메인 대시보드로 돌아가기</el-button
+    >
   </div>
 </template>
 
 <style scoped>
-.app {
-  width: 560px;
-  margin: 0 auto 40px;
-  padding: 36px 40px;
-  font-family:
-    'Pretendard',
-    -apple-system,
-    'Apple SD Gothic Neo',
-    sans-serif;
+.page-body {
   color: #1e293b;
-  background: #ffffff;
-  border-radius: 20px;
-  box-shadow: 0 20px 40px -12px rgba(30, 41, 59, 0.18);
 }
 
-.app__title {
-  font-size: 19px;
-  font-weight: 700;
-  margin: 0 0 18px;
-  color: #0f172a;
+.page-hero {
+  background: linear-gradient(120deg, var(--golf-green-800), var(--golf-green-500));
+  color: #fff;
+  border-radius: 18px;
+  padding: 24px;
+  margin-bottom: 16px;
+}
+
+.page-hero__title {
+  font-size: 20px;
+  font-weight: 800;
+  margin: 0 0 6px;
+}
+
+.page-hero__desc {
+  font-size: 13px;
+  color: #dcfce7;
+  margin: 0;
 }
 
 .panel {
-  background: linear-gradient(135deg, #eef2ff 0%, #f5f8ff 100%);
-  border: 1px solid #e0e7ff;
-  border-radius: 14px;
-  padding: 16px;
   margin-bottom: 14px;
 }
 
@@ -56,36 +88,43 @@
   font-size: 13px;
   font-weight: 700;
   letter-spacing: 0.02em;
-  color: #4338ca;
-  margin: 0 0 10px;
-}
-
-.desc {
-  font-size: 13px;
-  color: #475569;
-  margin: 0 0 10px;
+  color: var(--golf-green-800);
 }
 
 .feature-list {
+  list-style: none;
   margin: 0;
-  padding-left: 18px;
-  font-size: 13px;
-  color: #1e293b;
+  padding: 0;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 14px;
+}
+
+.feature-list li {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.feature-list__icon {
+  font-size: 20px;
+}
+
+.feature-list__title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--golf-green-950);
+  margin: 0;
+}
+
+.feature-list__desc {
+  font-size: 12px;
+  color: #64748b;
+  margin: 2px 0 0;
 }
 
 .back-btn {
-  display: block;
-  text-align: center;
-  background: #0f172a;
-  color: #fff;
-  border-radius: 999px;
-  padding: 10px;
-  font-size: 13px;
-  font-weight: 600;
-  text-decoration: none;
+  width: 100%;
   margin-top: 16px;
 }
 </style>

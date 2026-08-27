@@ -50,77 +50,91 @@ const rows = computed(() => [
 </script>
 
 <template>
-  <div class="app">
-    <h2 class="app__title">⛳ 골프장 날씨 (Axios)</h2>
+  <div class="page-body">
+    <section class="page-hero">
+      <h2 class="page-hero__title">🆚 골프장 비교</h2>
+      <p class="page-hero__desc">두 골프장의 실시간 날씨를 나란히 비교해보세요.</p>
+    </section>
 
-    <div class="panel">
-      <h3 class="panel__title">🆚 골프장 비교</h3>
+    <el-card class="panel" shadow="never">
+      <template #header>
+        <span class="panel__title">📊 비교 결과</span>
+      </template>
       <div class="picker-row">
-        <select v-model="cityIdA" class="picker">
-          <option v-for="city in weatherStore.cities" :key="city.id" :value="city.id">
-            {{ city.name }}
-          </option>
-        </select>
+        <el-select v-model="cityIdA" class="picker">
+          <el-option
+            v-for="city in weatherStore.cities"
+            :key="city.id"
+            :label="city.name"
+            :value="city.id"
+          />
+        </el-select>
         <span class="vs">VS</span>
-        <select v-model="cityIdB" class="picker">
-          <option v-for="city in weatherStore.cities" :key="city.id" :value="city.id">
-            {{ city.name }}
-          </option>
-        </select>
+        <el-select v-model="cityIdB" class="picker">
+          <el-option
+            v-for="city in weatherStore.cities"
+            :key="city.id"
+            :label="city.name"
+            :value="city.id"
+          />
+        </el-select>
       </div>
 
-      <table v-if="currentA && currentB" class="compare-table">
-        <thead>
-          <tr>
-            <th>{{ cityA.name }}({{ currentA.status }})</th>
-            <th></th>
-            <th>{{ cityB.name }}({{ currentB.status }})</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="row in rows" :key="row.label">
-            <td :class="{ highlight: row.higherIsA }">{{ row.a }}</td>
-            <td class="row-label">{{ row.label }}</td>
-            <td :class="{ highlight: !row.higherIsA }">{{ row.b }}</td>
-          </tr>
-        </tbody>
-      </table>
-      <p v-else-if="weatherStore.error" class="empty empty--error">{{ weatherStore.error }}</p>
-      <p v-else class="empty">날씨 정보를 불러오는 중...</p>
-    </div>
+      <el-table v-if="currentA && currentB" :data="rows" class="compare-table">
+        <el-table-column prop="label" label="" width="90" />
+        <el-table-column :label="`${cityA.name}(${currentA.status})`" align="center">
+          <template #default="{ row }">
+            <span :class="{ highlight: row.higherIsA }">{{ row.a }}</span>
+          </template>
+        </el-table-column>
+        <el-table-column :label="`${cityB.name}(${currentB.status})`" align="center">
+          <template #default="{ row }">
+            <span :class="{ highlight: !row.higherIsA }">{{ row.b }}</span>
+          </template>
+        </el-table-column>
+      </el-table>
+      <el-alert
+        v-else-if="weatherStore.error"
+        :title="weatherStore.error"
+        type="error"
+        :closable="false"
+        show-icon
+      />
+      <el-skeleton v-else :rows="3" animated />
+    </el-card>
 
-    <RouterLink to="/" class="back-btn">← 메인 대시보드로 돌아가기</RouterLink>
+    <el-button class="back-btn" round @click="router.push('/')"
+      >← 메인 대시보드로 돌아가기</el-button
+    >
   </div>
 </template>
 
 <style scoped>
-.app {
-  width: 560px;
-  margin: 0 auto 40px;
-  padding: 36px 40px;
-  font-family:
-    'Pretendard',
-    -apple-system,
-    'Apple SD Gothic Neo',
-    sans-serif;
+.page-body {
   color: #1e293b;
-  background: #ffffff;
-  border-radius: 20px;
-  box-shadow: 0 20px 40px -12px rgba(30, 41, 59, 0.18);
 }
 
-.app__title {
+.page-hero {
+  background: linear-gradient(120deg, var(--golf-green-800), var(--golf-green-500));
+  color: #fff;
+  border-radius: 18px;
+  padding: 20px 24px;
+  margin-bottom: 16px;
+}
+
+.page-hero__title {
   font-size: 19px;
-  font-weight: 700;
-  margin: 0 0 18px;
-  color: #0f172a;
+  font-weight: 800;
+  margin: 0 0 4px;
+}
+
+.page-hero__desc {
+  font-size: 13px;
+  color: #dcfce7;
+  margin: 0;
 }
 
 .panel {
-  background: linear-gradient(135deg, #eef2ff 0%, #f5f8ff 100%);
-  border: 1px solid #e0e7ff;
-  border-radius: 14px;
-  padding: 16px;
   margin-bottom: 14px;
 }
 
@@ -128,8 +142,7 @@ const rows = computed(() => [
   font-size: 13px;
   font-weight: 700;
   letter-spacing: 0.02em;
-  color: #4338ca;
-  margin: 0 0 10px;
+  color: var(--golf-green-800);
 }
 
 .picker-row {
@@ -141,11 +154,6 @@ const rows = computed(() => [
 
 .picker {
   flex: 1;
-  padding: 8px 10px;
-  border: 1px solid #c7d2fe;
-  border-radius: 8px;
-  font-size: 13px;
-  background: #fff;
 }
 
 .vs {
@@ -156,58 +164,15 @@ const rows = computed(() => [
 
 .compare-table {
   width: 100%;
-  border-collapse: collapse;
-  font-size: 13px;
-  background: #fff;
-  border-radius: 10px;
-  overflow: hidden;
 }
 
-.compare-table th,
-.compare-table td {
-  padding: 8px 6px;
-  text-align: center;
-}
-
-.compare-table thead th {
-  font-size: 12px;
+.compare-table :deep(.highlight) {
+  color: var(--golf-green-700);
   font-weight: 700;
-  color: #0f172a;
-  border-bottom: 1px solid #e2e8f0;
-}
-
-.row-label {
-  color: #94a3b8;
-  font-size: 12px;
-  white-space: nowrap;
-}
-
-.compare-table td.highlight {
-  color: #4338ca;
-  font-weight: 700;
-}
-
-.empty {
-  text-align: center;
-  color: #94a3b8;
-  font-size: 13px;
-  padding: 20px 0;
-}
-
-.empty--error {
-  color: #dc2626;
 }
 
 .back-btn {
-  display: block;
-  text-align: center;
-  background: #0f172a;
-  color: #fff;
-  border-radius: 999px;
-  padding: 10px;
-  font-size: 13px;
-  font-weight: 600;
-  text-decoration: none;
+  width: 100%;
   margin-top: 16px;
 }
 </style>

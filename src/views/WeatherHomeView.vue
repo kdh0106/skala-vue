@@ -58,11 +58,40 @@ const sortedWeatherList = computed(() =>
 watch(sortOrder, (order) => {
   console.log('[watch] 정렬 순서 변경:', order === 'asc' ? '오름차순' : '내림차순')
 })
+
+// 상단 요약 통계 (표시 전용, 별도 로직 없음)
+const averageTemp = computed(() => {
+  if (weatherList.value.length === 0) return null
+  const sum = weatherList.value.reduce((acc, city) => acc + city.temp, 0)
+  return Math.round(sum / weatherList.value.length)
+})
+const goodRoundingCount = computed(
+  () => weatherList.value.filter((city) => city.temp > 18 && city.temp <= 30).length,
+)
 </script>
 
 <template>
-  <div class="app">
-    <h2 class="app__title">⛳ 골프장 날씨 (Axios)</h2>
+  <div class="page-body">
+    <section class="banner">
+      <div class="banner__text">
+        <h2 class="banner__title">오늘, 라운딩하기 좋은 골프장은 어디일까요?</h2>
+        <p class="banner__desc">전국 골프장 실시간 날씨와 티오프 가능 시간을 한눈에 확인하세요.</p>
+      </div>
+      <div class="banner__stats">
+        <div class="stat">
+          <span class="stat__value">{{ weatherList.length }}</span>
+          <span class="stat__label">등록 골프장</span>
+        </div>
+        <div class="stat">
+          <span class="stat__value">{{ averageTemp ?? '-' }}°</span>
+          <span class="stat__label">평균 기온</span>
+        </div>
+        <div class="stat stat--highlight">
+          <span class="stat__value">{{ goodRoundingCount }}</span>
+          <span class="stat__label">라운딩 추천</span>
+        </div>
+      </div>
+    </section>
 
     <BaseDashboardCard title="🔍 골프장 검색">
       <SearchBar :search-query="searchQuery" @update-query="onUpdateQuery" />
@@ -71,17 +100,27 @@ watch(sortOrder, (order) => {
 
     <BaseDashboardCard title="📋 골프장별 날씨 현황">
       <template #extra>
-        <button class="sort-btn" @click="toggleSortOrder">
+        <el-button size="small" round @click="toggleSortOrder">
           기온 {{ sortOrder === 'asc' ? '오름차순 ⬆️' : '내림차순 ⬇️' }}
-        </button>
+        </el-button>
       </template>
 
-      <p v-if="weatherStore.loading" class="empty">날씨 정보를 불러오는 중...</p>
-      <p v-else-if="weatherStore.error" class="empty empty--error">{{ weatherStore.error }}</p>
-      <p v-else-if="filteredWeatherList.length === 0" class="empty">
-        "{{ searchQuery }}"와 일치하는 골프장이 없습니다.
-      </p>
-      <ul v-else class="card-list">
+      <el-skeleton v-if="weatherStore.loading" :rows="4" animated />
+      <el-alert
+        v-else-if="weatherStore.error"
+        :title="weatherStore.error"
+        type="error"
+        :closable="false"
+        show-icon
+      />
+      <el-alert
+        v-else-if="filteredWeatherList.length === 0"
+        :title="`'${searchQuery}'와 일치하는 골프장이 없습니다.`"
+        type="info"
+        :closable="false"
+        show-icon
+      />
+      <div v-else class="card-list">
         <WeatherCard
           v-for="city in sortedWeatherList"
           :key="city.id"
@@ -89,90 +128,97 @@ watch(sortOrder, (order) => {
           @select-card="selectCity"
           @click-detail="goToDetail"
         />
-      </ul>
+      </div>
     </BaseDashboardCard>
 
-    <p class="notice">
-      {{
+    <el-alert
+      class="notice"
+      :title="
         selectedCityInfo
           ? `${selectedCityInfo.name}이 선택되었습니다.`
           : '카드를 클릭하거나 검색해 보세요.'
-      }}
-    </p>
+      "
+      type="success"
+      :closable="false"
+      center
+    />
   </div>
 </template>
 
 <style scoped>
-.app {
-  width: 560px;
-  margin: 0 auto 40px;
-  padding: 36px 40px;
-  font-family:
-    'Pretendard',
-    -apple-system,
-    'Apple SD Gothic Neo',
-    sans-serif;
+.page-body {
   color: #1e293b;
-  background: #ffffff;
-  border-radius: 20px;
-  box-shadow: 0 20px 40px -12px rgba(30, 41, 59, 0.18);
 }
 
-.app__title {
+.banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 20px;
+  background: linear-gradient(120deg, var(--golf-green-800), var(--golf-green-500));
+  color: #fff;
+  border-radius: 18px;
+  padding: 24px;
+  margin-bottom: 20px;
+}
+
+.banner__title {
   font-size: 19px;
-  font-weight: 700;
-  margin: 0 0 18px;
-  color: #0f172a;
+  font-weight: 800;
+  margin: 0 0 6px;
+}
+
+.banner__desc {
+  font-size: 13px;
+  color: #dcfce7;
+  margin: 0;
+}
+
+.banner__stats {
+  display: flex;
+  gap: 10px;
+}
+
+.stat {
+  background: rgba(255, 255, 255, 0.14);
+  border-radius: 12px;
+  padding: 10px 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 78px;
+}
+
+.stat--highlight {
+  background: var(--golf-sand);
+  color: var(--golf-green-950);
+}
+
+.stat__value {
+  font-size: 20px;
+  font-weight: 800;
+}
+
+.stat__label {
+  font-size: 10px;
+  opacity: 0.85;
 }
 
 .search__echo {
   font-size: 12px;
-  color: #6366f1;
+  color: var(--golf-green-700);
   margin: 10px 0 0;
   font-weight: 500;
 }
 
-.empty {
-  text-align: center;
-  color: #94a3b8;
-  font-size: 13px;
-  padding: 20px 0;
-}
-
-.empty--error {
-  color: #dc2626;
-}
-
 .card-list {
-  list-style: none;
-  margin: 0;
-  padding: 0;
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 14px;
-}
-
-.sort-btn {
-  border: 1px solid #c7d2fe;
-  background: #fff;
-  color: #4338ca;
-  border-radius: 999px;
-  padding: 4px 10px;
-  font-size: 11px;
-  font-weight: 600;
-  cursor: pointer;
-  margin-bottom: 10px;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 16px;
 }
 
 .notice {
-  text-align: center;
-  background: #f0fdf4;
-  color: #15803d;
-  border: 1px solid #bbf7d0;
-  border-radius: 10px;
-  padding: 10px;
-  font-size: 13px;
-  font-weight: 500;
-  margin: 16px 0 0;
+  margin-top: 16px;
 }
 </style>

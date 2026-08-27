@@ -28,151 +28,186 @@ const displayTemp = computed(() => {
   }
   return rawTemp // 'celsius'일 때는 원본 그대로 반환
 })
+
+// 골프장 느낌을 살리는 한 줄 코멘트 (표시 전용, 온도 분류 로직과는 별개)
+const roundingTip = computed(() => {
+  const t = props.city.temp
+  if (t <= 18) return '🧥 쌀쌀해요, 방한 준비하고 라운딩하세요'
+  if (t <= 30) return '🏌️ 라운딩하기 좋은 날씨예요'
+  return '🥵 무더위 주의, 수분 보충 필수예요'
+})
 </script>
 
 <template>
-  <li class="card" :class="tempClass" @click="$emit('select-card', city)">
-    <div class="card__row">
-      <span class="card__name">{{ city.name }}({{ city.status }})</span>
-      <button class="card__btn" @click.stop="$emit('click-detail', city)">상세보기</button>
+  <el-card class="card" :class="tempClass" shadow="hover" @click="$emit('select-card', city)">
+    <div class="card__photo">
+      <img :src="city.photo" class="card__photo-img" alt="" />
+      <div class="card__photo-scrim">
+        <p class="card__name">⛳ {{ city.name }}</p>
+        <p class="card__region">{{ city.region }}</p>
+      </div>
     </div>
-    <p class="card__temp">
-      현재 기온: {{ displayTemp }}{{ configStore.unitSymbol }} · 습도 {{ city.humidity }}% · 풍속
-      {{ city.windSpeed }}m/s
-    </p>
-    <div class="card__badges">
-      <span v-if="city.temp <= 18" class="card__badge card__badge--cold">
-        ❄️ 추움 (18도 이하)
-      </span>
-      <span v-else-if="city.temp <= 25" class="card__badge card__badge--cool">
-        🍃 선선함 (19~25도)
-      </span>
-      <span v-else-if="city.temp <= 30" class="card__badge card__badge--mild">
-        🌤 따뜻함 (26~30도)
-      </span>
-      <span v-else class="card__badge card__badge--warm"> 🔥 더움 (30도 초과) </span>
-
-      <span class="card__badge card__badge--status">
+    <div class="card__strip" />
+    <div class="card__body">
+      <div class="card__temp-row">
         <img
-          :src="`https://openweathermap.org/img/wn/${city.icon}.png`"
-          class="card__badge__icon"
+          :src="`https://openweathermap.org/img/wn/${city.icon}@2x.png`"
+          class="card__icon"
           alt=""
         />
-        {{ city.status }}
-      </span>
+        <span class="card__temp">{{ displayTemp }}°</span>
+        <span class="card__temp-unit">{{ configStore.unitSymbol }}</span>
+        <span class="card__status">{{ city.status }}</span>
+      </div>
+
+      <div class="card__stats">
+        <span>💧 {{ city.humidity }}%</span>
+        <span>🍃 {{ city.windSpeed }}m/s</span>
+      </div>
+
+      <p class="card__tip">{{ roundingTip }}</p>
+
+      <div class="card__badges">
+        <el-tag v-if="city.temp <= 18" effect="dark" round size="small" color="#2563eb">
+          추움
+        </el-tag>
+        <el-tag v-else-if="city.temp <= 25" effect="dark" round size="small" color="#06b6d4">
+          선선함
+        </el-tag>
+        <el-tag v-else-if="city.temp <= 30" effect="dark" round size="small" color="#40916c">
+          쾌적함
+        </el-tag>
+        <el-tag v-else effect="dark" round size="small" color="#ef4444"> 더움 </el-tag>
+      </div>
+
+      <el-button class="card__btn" type="primary" round @click.stop="$emit('click-detail', city)">
+        상세보기 →
+      </el-button>
     </div>
-  </li>
+  </el-card>
 </template>
 
 <style scoped>
 .card {
-  background: #fff;
-  border: 1px solid #e2e8f0;
-  border-left: 4px solid transparent;
-  border-radius: 10px;
-  padding: 12px 14px;
-  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
-  transition:
-    transform 0.15s,
-    box-shadow 0.15s;
+  cursor: pointer;
+  overflow: hidden;
 }
 
-.card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 16px -6px rgba(15, 23, 42, 0.15);
+.card :deep(.el-card__body) {
+  padding: 0;
 }
 
-.card--warm {
-  border-left-color: #f87171;
+.card__photo {
+  position: relative;
+  height: 140px;
+  overflow: hidden;
 }
 
-.card--mild {
-  border-left-color: #fb923c;
+.card__photo-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
-.card--cool {
-  border-left-color: #22d3ee;
+.card__photo-scrim {
+  position: absolute;
+  inset: auto 0 0 0;
+  padding: 24px 14px 10px;
+  background: linear-gradient(to top, rgba(11, 46, 31, 0.85), rgba(11, 46, 31, 0));
 }
 
-.card--cold {
-  border-left-color: #2563eb;
+.card__strip {
+  height: 4px;
 }
 
-.card__row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
+.card--warm .card__strip {
+  background: linear-gradient(90deg, #f87171, #ef4444);
+}
+
+.card--mild .card__strip {
+  background: linear-gradient(90deg, var(--golf-green-300), var(--golf-green-700));
+}
+
+.card--cool .card__strip {
+  background: linear-gradient(90deg, #67e8f9, #06b6d4);
+}
+
+.card--cold .card__strip {
+  background: linear-gradient(90deg, #60a5fa, #2563eb);
+}
+
+.card__body {
+  padding: 16px;
 }
 
 .card__name {
   font-weight: 700;
-  font-size: 14px;
-  color: #0f172a;
+  font-size: 15px;
+  color: #fff;
+  margin: 0;
 }
 
-.card__btn {
-  border: none;
-  background: #eef2ff;
-  color: #4338ca;
-  border-radius: 999px;
-  padding: 5px 12px;
-  font-size: 12px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background 0.15s;
+.card__region {
+  font-size: 11px;
+  color: #dcfce7;
+  margin: 2px 0 0;
 }
 
-.card__btn:hover {
-  background: #e0e7ff;
+.card__icon {
+  width: 36px;
+  height: 36px;
+}
+
+.card__temp-row {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
 }
 
 .card__temp {
+  font-size: 30px;
+  font-weight: 800;
+  color: var(--golf-green-950);
+  line-height: 1;
+}
+
+.card__temp-unit {
+  font-size: 14px;
+  color: #64748b;
+}
+
+.card__status {
   font-size: 12px;
   color: #64748b;
-  margin: 8px 0 10px;
+  margin-left: 6px;
+}
+
+.card__stats {
+  display: flex;
+  gap: 12px;
+  font-size: 12px;
+  color: #475569;
+  margin-top: 8px;
+}
+
+.card__tip {
+  font-size: 11px;
+  color: var(--golf-green-700);
+  background: var(--golf-green-100);
+  border-radius: 8px;
+  padding: 6px 8px;
+  margin: 10px 0 0;
 }
 
 .card__badges {
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
+  margin-top: 10px;
 }
 
-.card__badge {
-  display: inline-block;
-  font-size: 11px;
-  font-weight: 600;
-  padding: 4px 10px;
-  border-radius: 999px;
-  color: #fff;
-}
-
-.card__badge--warm {
-  background: linear-gradient(135deg, #f87171, #ef4444);
-}
-
-.card__badge--mild {
-  background: linear-gradient(135deg, #fb923c, #f97316);
-}
-
-.card__badge--cool {
-  background: linear-gradient(135deg, #22d3ee, #06b6d4);
-}
-
-.card__badge--cold {
-  background: linear-gradient(135deg, #60a5fa, #2563eb);
-}
-
-.card__badge--status {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  background: #f1f5f9;
-  color: #475569;
-}
-
-.card__badge__icon {
-  width: 16px;
-  height: 16px;
+.card__btn {
+  width: 100%;
+  margin-top: 12px;
 }
 </style>

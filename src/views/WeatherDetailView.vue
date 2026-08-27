@@ -1,10 +1,11 @@
 <script setup>
 import { computed, onMounted } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { useConfigStore } from '../stores/configStore'
 import { useWeatherStore } from '../stores/weatherStore'
 
 const route = useRoute()
+const router = useRouter()
 const configStore = useConfigStore()
 const weatherStore = useWeatherStore()
 
@@ -39,36 +40,74 @@ const displayWindSpeed = computed(() => {
 </script>
 
 <template>
-  <div class="app">
-    <h2 class="app__title">⛳ 골프장 날씨 (Axios)</h2>
-
+  <div class="page-body">
     <template v-if="city">
-      <div v-if="current" class="panel">
-        <h3 class="panel__title">📡 골프장 상세 기상 관측 정보</h3>
-        <ul class="detail-list">
-          <li>⛳ 골프장: {{ city.name }} ({{ city.region }})</li>
-          <li>🌡 실시간 기온: {{ displayTemp }}{{ configStore.unitSymbol }}</li>
-          <li>🌤 기상 현황: {{ current.status }}</li>
-          <li>💧 대기 습도: {{ current.humidity }}%</li>
-          <li class="detail-list__row">
-            <span>🍃 현재 풍속: {{ displayWindSpeed }}{{ configStore.windUnitSymbol }}</span>
-            <button class="wind-unit-btn" @click="configStore.toggleWindUnit">단위변경</button>
-          </li>
-        </ul>
-      </div>
-      <p v-else-if="weatherStore.error" class="empty empty--error">{{ weatherStore.error }}</p>
-      <p v-else class="empty">날씨 정보를 불러오는 중...</p>
+      <section
+        v-if="current"
+        class="hero-card"
+        :style="{
+          backgroundImage: `linear-gradient(120deg, rgba(11,46,31,0.88), rgba(45,106,79,0.72)), url(${city.photo})`,
+        }"
+      >
+        <div class="hero-card__main">
+          <p class="hero-card__eyebrow">⛳ {{ city.region }}</p>
+          <h2 class="hero-card__name">{{ city.name }}</h2>
+          <div class="hero-card__temp-row">
+            <img
+              :src="`https://openweathermap.org/img/wn/${current.icon}@2x.png`"
+              class="hero-card__icon"
+              alt=""
+            />
+            <span class="hero-card__temp">{{ displayTemp }}°</span>
+            <span class="hero-card__unit">{{ configStore.unitSymbol }}</span>
+          </div>
+          <p class="hero-card__status">{{ current.status }}</p>
+        </div>
+        <div class="hero-card__stats">
+          <div class="stat-pill">
+            <span class="stat-pill__label">💧 습도</span>
+            <span class="stat-pill__value">{{ current.humidity }}%</span>
+          </div>
+          <div class="stat-pill">
+            <span class="stat-pill__label">🍃 풍속</span>
+            <span class="stat-pill__value">
+              {{ displayWindSpeed }}{{ configStore.windUnitSymbol }}
+            </span>
+            <el-button size="small" round @click="configStore.toggleWindUnit">단위변경</el-button>
+          </div>
+        </div>
+      </section>
+      <el-alert
+        v-else-if="weatherStore.error"
+        :title="weatherStore.error"
+        type="error"
+        :closable="false"
+        show-icon
+      />
+      <el-skeleton v-else :rows="3" animated />
 
-      <div v-if="sunset" class="panel">
-        <h3 class="panel__title">🌇 일몰 · 티오프 정보</h3>
-        <ul class="detail-list">
-          <li>🌇 오늘의 일몰: {{ sunset.sunset }} (KST)</li>
-          <li>⛳ 마지막 티오프 권장: {{ sunset.lastTeeTime }} (일몰 1시간 전 기준)</li>
-        </ul>
-      </div>
+      <section v-if="sunset" class="tee-card">
+        <div class="tee-card__item">
+          <span class="tee-card__icon">🌇</span>
+          <div>
+            <p class="tee-card__label">오늘의 일몰</p>
+            <p class="tee-card__value">{{ sunset.sunset }} (KST)</p>
+          </div>
+        </div>
+        <div class="tee-card__divider" />
+        <div class="tee-card__item">
+          <span class="tee-card__icon">⛳</span>
+          <div>
+            <p class="tee-card__label">마지막 티오프 권장</p>
+            <p class="tee-card__value">{{ sunset.lastTeeTime }} (일몰 1시간 전)</p>
+          </div>
+        </div>
+      </section>
 
-      <div v-if="forecast" class="panel">
-        <h3 class="panel__title">📅 5일 예보</h3>
+      <el-card v-if="forecast" class="panel" shadow="never">
+        <template #header>
+          <span class="panel__title">📅 5일 예보</span>
+        </template>
         <ul class="forecast-list">
           <li v-for="day in forecast" :key="day.date" class="forecast-list__item">
             <img
@@ -80,44 +119,148 @@ const displayWindSpeed = computed(() => {
             <span class="forecast-list__temp">{{ day.temp }}°C</span>
           </li>
         </ul>
-      </div>
+      </el-card>
     </template>
-    <p v-else class="empty">
-      "{{ route.params.cityId }}"에 해당하는 골프장 정보를 찾을 수 없습니다.
-    </p>
+    <el-alert
+      v-else
+      :title="`'${route.params.cityId}'에 해당하는 골프장 정보를 찾을 수 없습니다.`"
+      type="warning"
+      :closable="false"
+      show-icon
+    />
 
-    <RouterLink to="/" class="back-btn">← 메인 대시보드로 돌아가기</RouterLink>
+    <el-button class="back-btn" round @click="router.push('/')"
+      >← 메인 대시보드로 돌아가기</el-button
+    >
   </div>
 </template>
 
 <style scoped>
-.app {
-  width: 560px;
-  margin: 0 auto 40px;
-  padding: 36px 40px;
-  font-family:
-    'Pretendard',
-    -apple-system,
-    'Apple SD Gothic Neo',
-    sans-serif;
+.page-body {
   color: #1e293b;
-  background: #ffffff;
-  border-radius: 20px;
-  box-shadow: 0 20px 40px -12px rgba(30, 41, 59, 0.18);
 }
 
-.app__title {
-  font-size: 19px;
+.hero-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 20px;
+  background-size: cover;
+  background-position: center;
+  color: #fff;
+  border-radius: 18px;
+  padding: 24px;
+  margin-bottom: 16px;
+}
+
+.hero-card__eyebrow {
+  font-size: 12px;
+  color: #bdeeda;
+  margin: 0 0 4px;
+}
+
+.hero-card__name {
+  font-size: 22px;
+  font-weight: 800;
+  margin: 0 0 8px;
+}
+
+.hero-card__temp-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.hero-card__icon {
+  width: 52px;
+  height: 52px;
+  margin-right: 4px;
+}
+
+.hero-card__temp {
+  font-size: 42px;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.hero-card__unit {
+  font-size: 16px;
+  color: #dcfce7;
+}
+
+.hero-card__status {
+  font-size: 13px;
+  color: #dcfce7;
+  margin: 4px 0 0;
+}
+
+.hero-card__stats {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.stat-pill {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: rgba(255, 255, 255, 0.14);
+  border-radius: 999px;
+  padding: 8px 14px;
+  font-size: 13px;
+}
+
+.stat-pill__label {
+  color: #dcfce7;
+}
+
+.stat-pill__value {
   font-weight: 700;
-  margin: 0 0 18px;
-  color: #0f172a;
+}
+
+.tee-card {
+  display: flex;
+  align-items: center;
+  background: linear-gradient(120deg, #fdf6e3, #fbecc4);
+  border: 1px solid var(--golf-sand);
+  border-radius: 16px;
+  padding: 16px 20px;
+  margin-bottom: 16px;
+}
+
+.tee-card__item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+}
+
+.tee-card__icon {
+  font-size: 24px;
+}
+
+.tee-card__label {
+  font-size: 11px;
+  color: var(--golf-sand-dark);
+  margin: 0;
+}
+
+.tee-card__value {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--golf-green-950);
+  margin: 2px 0 0;
+}
+
+.tee-card__divider {
+  width: 1px;
+  align-self: stretch;
+  background: var(--golf-sand);
+  margin: 0 16px;
 }
 
 .panel {
-  background: linear-gradient(135deg, #eef2ff 0%, #f5f8ff 100%);
-  border: 1px solid #e0e7ff;
-  border-radius: 14px;
-  padding: 16px;
   margin-bottom: 14px;
 }
 
@@ -125,36 +268,7 @@ const displayWindSpeed = computed(() => {
   font-size: 13px;
   font-weight: 700;
   letter-spacing: 0.02em;
-  color: #4338ca;
-  margin: 0 0 10px;
-}
-
-.detail-list {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  font-size: 13px;
-  color: #1e293b;
-}
-
-.detail-list__row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.wind-unit-btn {
-  border: 1px solid #c7d2fe;
-  background: #fff;
-  color: #4338ca;
-  border-radius: 999px;
-  padding: 3px 10px;
-  font-size: 11px;
-  font-weight: 600;
-  cursor: pointer;
+  color: var(--golf-green-800);
 }
 
 .forecast-list {
@@ -172,7 +286,7 @@ const displayWindSpeed = computed(() => {
   flex-direction: column;
   align-items: center;
   gap: 2px;
-  background: #fff;
+  background: var(--golf-green-100);
   border-radius: 8px;
   padding: 8px 4px;
 }
@@ -190,30 +304,11 @@ const displayWindSpeed = computed(() => {
 .forecast-list__temp {
   font-size: 12px;
   font-weight: 700;
-  color: #0f172a;
-}
-
-.empty {
-  text-align: center;
-  color: #94a3b8;
-  font-size: 13px;
-  padding: 20px 0;
-}
-
-.empty--error {
-  color: #dc2626;
+  color: var(--golf-green-950);
 }
 
 .back-btn {
-  display: block;
-  text-align: center;
-  background: #0f172a;
-  color: #fff;
-  border-radius: 999px;
-  padding: 10px;
-  font-size: 13px;
-  font-weight: 600;
-  text-decoration: none;
+  width: 100%;
   margin-top: 16px;
 }
 </style>
